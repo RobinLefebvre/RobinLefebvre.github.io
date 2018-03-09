@@ -336,7 +336,7 @@ const classFeatures =
 		"7" : ["Sorcerer(4,3,3,1,0,0,0,0,0)", "Cantrips : 5", "Spells : 8", "Sorcery Points : 7"],
 		"8" : ["Sorcerer(4,3,3,2,0,0,0,0,0)", "Cantrips : 5", "Spells : 9", "Sorcery Points : 8", "Ability Score Improvement" ],
 		"9" : ["Sorcerer(4,3,3,3,1,0,0,0,0)", "Cantrips : 5", "Spells : 10", "Sorcery Points : 9" ],
-		"10" : ["Sorcerer(4,3,3,3,2,0,0,0,0)", "Cantrips : 6", "Spells : 11", "Sorcery Points : 10", "Sorcerous Origin Feature", "Metamagic Improvement" ],
+		"10" : ["Sorcerer(4,3,3,3,2,0,0,0,0)", "Cantrips : 6", "Spells : 11", "Sorcery Points : 10", "Sorcerous Origin Feature", "Metamagic improvement" ],
 		"11" : ["Sorcerer(4,3,3,3,2,1,0,0,0)", "Cantrips : 6", "Spells : 12", "Sorcery Points : 11" ],
 		"12" : ["Sorcerer(4,3,3,3,2,1,0,0,0)", "Cantrips : 6", "Spells : 12", "Sorcery Points : 12", "Ability Score Improvement" ],
 		"13" : ["Sorcerer(4,3,3,3,2,1,1,0,0)", "Cantrips : 6", "Spells : 13", "Sorcery Points : 13" ],
