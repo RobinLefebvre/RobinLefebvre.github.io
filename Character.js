@@ -320,7 +320,7 @@ class Character {
 			this.setSkillProficiencies(className);
 
 		this.setSkillBonuses();
-		this.setSpells(className);
+		//this.setSpells(className);
 	}
 	
 	applyRace(raceName)
