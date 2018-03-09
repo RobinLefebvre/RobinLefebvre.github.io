@@ -976,7 +976,7 @@ const regexPatterns =
 	"Sneak Attack" : /^(Sneak Attack) : ([0-9])/,
 	"Sorcery Points" : /^(Sorcery Points) : ([0-9]+)/,
 	"Invocations" : /^(Invocations) : ([0-9]+)/,
-	"Warlock Slot" : /^(Slots) :([0-9]+)/,
+	"Warlock Slot" : /^(Slots) : ([0-9]+)/,
 	"Slot Level" : /^(Slot Level) : ([0-9]+)/,
 	"Mystic Arcanum" : /^(Mystic Arcanum) : ([0-9]+)/,
 	"Spell Slots" : /^(.+)\(([0-9]),([0-9]),([0-9]),([0-9]),([0-9]),([0-9]),([0-9]),([0-9]),([0-9])\)$/, 
