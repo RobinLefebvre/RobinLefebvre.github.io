@@ -336,7 +336,7 @@ const classFeatures =
 		"7" : ["Sorcerer(4,3,3,1,0,0,0,0,0)", "Cantrips : 5", "Spells : 8", "Sorcery Points : 7"],
 		"8" : ["Sorcerer(4,3,3,2,0,0,0,0,0)", "Cantrips : 5", "Spells : 9", "Sorcery Points : 8", "Ability Score Improvement" ],
 		"9" : ["Sorcerer(4,3,3,3,1,0,0,0,0)", "Cantrips : 5", "Spells : 10", "Sorcery Points : 9" ],
-		"10" : ["Sorcerer(4,3,3,3,2,0,0,0,0)", "Cantrips : 6", "Spells : 11", "Sorcery Points : 10", "Sorcerous Origin Feature", "Metamagic improvement" ],
+		"10" : ["Sorcerer(4,3,3,3,2,0,0,0,0)", "Cantrips : 6", "Spells : 11", "Sorcery Points : 10", "Sorcerous Origin Feature", "Metamagic Improvement" ],
 		"11" : ["Sorcerer(4,3,3,3,2,1,0,0,0)", "Cantrips : 6", "Spells : 12", "Sorcery Points : 11" ],
 		"12" : ["Sorcerer(4,3,3,3,2,1,0,0,0)", "Cantrips : 6", "Spells : 12", "Sorcery Points : 12", "Ability Score Improvement" ],
 		"13" : ["Sorcerer(4,3,3,3,2,1,1,0,0)", "Cantrips : 6", "Spells : 13", "Sorcery Points : 13" ],
@@ -366,7 +366,7 @@ const classFeatures =
 		"14" : [ "Slots : 3", "Slot Level : 5" , "Cantrips : 4", "Spells : 12", "Invocations : 6", "Otherwordly Patron Feature"],
 		"15" : [ "Slots : 3", "Slot Level : 5" , "Cantrips : 4", "Spells : 13", "Invocations : 7", "Mystic Arcanum : 8"],
 		"16" : [ "Slots : 3", "Slot Level : 5" , "Cantrips : 4", "Spells : 13", "Invocations : 7", "Ability Score Improvement"],
-		"17" : [ "Slots : 4", "Slot Level : 5" , "Cantrips : 4", "Spells : 14", "Invocations : 7", "Mystic Arcanum :  9"],
+		"17" : [ "Slots : 4", "Slot Level : 5" , "Cantrips : 4", "Spells : 14", "Invocations : 7", "Mystic Arcanum : 9"],
 		"18" : [ "Slots : 4", "Slot Level : 5" , "Cantrips : 4", "Spells : 14", "Invocations : 8"],
 		"19" : [ "Slots : 4", "Slot Level : 5" , "Cantrips : 4", "Spells : 15", "Invocations : 8", "Ability Score Improvement"],
 		"20" : [ "Slots : 4", "Slot Level : 5" , "Cantrips : 4", "Spells : 15", "Invocations : 8", "Eldritch Master"]
@@ -747,6 +747,7 @@ const featurez =
   "Invocations" : "In your study of occult lore, you have unearthed eldritch invocations, fragments of forbidden knowledge that imbue you with an abiding magical ability. You gain two eldritch invocations of your choice. Additionally, when you gain a level in this class, you can choose one of the invocations you know and replace it with another invocation that you could learn at that level.",
   "Pact Boon": "Your otherworldly patron bestows a gift upon you for your loyal service. You gain one of the following features of your choice. <br/><b> Pact of The Chain </b> You learn the Find Familiar spell and can cast it as a ritual. The spell doesn't count against your number of spells known. When you cast the spell, you can choose one of the normal forms for your familiar or one of the following special forms: imp, pseudodragon, quasit, or sprite. Additionally, when you take the Attack action, you can forgo one of your own attacks to allow your familiar to make one attack of its own. <br/><b> Pact Of The Blade </b> You can use your action to create a pact weapon in your empty hand. You can choose the form that this melee weapon takes each time you create it. You are proficient with it while you wield it. This weapon counts as magical for the purpose of overcoming resistance and immunity to nonmagical attacks and damage. Your pact weapon disappears if it is more than 5 feet away from you for 1 minute or more. It also disappears if you use this feature again, if you dismiss the weapon (no action required), or if you die. You can transform one magic weapon into your pact weapon by perform ing a special ritual while you hold the weapon. You perform the ritual over the course of 1 hour, which can be done during a short rest. You can then dism iss the weapon, shunting it into an extradimensional space, and it appears whenever you create your pact weapon thereafter. You can't affect an artifact or a sentient weapon in this way. The weapon ceases being your pact weapon if you die, if you perform the 1-hour ritual on a different weapon, or if you use a 1-hour ritual to break your bond to it. The weapon appears at your feet if it is in the extradimensional space when the bond breaks. <br/> <b> Pact Of The Tome </b> Your patron gives you a grimoire called a Book of Shadows. When you gain this feature, choose three cantrips from any class's spell list. While the book is on your person, you can cast those cantrips at will. They don't count against your number of cantrips known. If you lose your Book of Shadows, you can perform a 1-hour ceremony to receive a replacement from your patron. This ceremony can be performed during a short or long rest, and it destroys the previous book. The book turns to ash when you die.",
   "Eldritch Master": "You can draw on your inner reserve of mystical power while entreating your patron to regain expended spell slots. You can spend 1 minute entreating your patron for aid to regain all your expended spell slots from your Pact Magic feature. Once you regain spell slots with this feature, you must finish a long rest before you can do so again.",
+  "Mystic Arcanum": "Choose one spell from the warlock spell list for each level from 6th up to the number indicated in this feature's title. These spell becomes your arcanum spells. You can cast any of your arcanum spell once without expending a spell slot. You must finish a long rest before you can do so again. You regain uses of all your Mystic Arcanum when you finish a long rest.",
   // WIZARD
   "Arcane Recovery": "Once per day when you finish a short rest, you can choose expended spell slots to recover. The spell slots can have a combined level that is equal to or less than half your wizard level (rounded up), and none of the slots can be 6th level or higher. For example, if you're a 4th-level wizard, you can recover up to two levels worth of spell slots. You can recover either a 2nd-level spell slot or two 1st-level spell slots.",
   "Spell Mastery": "Choose a 1st-level wizard spell and a 2nd-level wizard spell that are in your spellbook. You can cast those spells at their lowest level without expending a spell slot when you have them prepared. If you want to cast either spell at a higher level, you must expend a spell slot as normal. By spending 8 hours in study, you can exchange one or both of the spells you chose for different spells of the same levels.",
@@ -975,7 +976,7 @@ const regexPatterns =
 	"Sneak Attack" : /^(Sneak Attack) : ([0-9])/,
 	"Sorcery Points" : /^(Sorcery Points) : ([0-9]+)/,
 	"Invocations" : /^(Invocations) : ([0-9]+)/,
-	"Warlock Slot" : /^(Slots) : ([0-9]+)/,
+	"Warlock Slot" : /^(Slots) :([0-9]+)/,
 	"Slot Level" : /^(Slot Level) : ([0-9]+)/,
 	"Mystic Arcanum" : /^(Mystic Arcanum) : ([0-9]+)/,
 	"Spell Slots" : /^(.+)\(([0-9]),([0-9]),([0-9]),([0-9]),([0-9]),([0-9]),([0-9]),([0-9]),([0-9])\)$/, 
@@ -1000,6 +1001,6 @@ const reg =
 	"Ranger" : ["Spell Slots", "Spells"],
 	"Rogue" : ["Sneak Attack"],
 	"Sorcerer" : ["Sorcery Points", "Spell Slots", "Spells", "Cantrips"],  
-	"Warlock" : ["Invocations", "Warlock Slot", "Slot Level", "Mystic Arcanum"],
+	"Warlock" : ["Invocations", "Warlock Slot", "Slot Level", "Mystic Arcanum", "Spells", "Cantrips"],
 	"Wizard" : ["Spell Slots", "Spells", "Cantrips"]
 };
