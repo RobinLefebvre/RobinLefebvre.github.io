@@ -243,16 +243,28 @@ class Character {
 				}
 			}
 		});
+		// List available spells
 		if(classSpells[className] !== undefined)
 		{
+			this.spells[className].available = [];
 			classSpells[className].forEach( spell => 
 			{
 				if(spell.level[0] <= spellLevel)
 				{
-					this.spells[className].push(spell);
+					this.spells[className].available.push(spell);
 				}
 			});
 		}
+		
+		this.features.classe.forEach( feature => 
+		{
+			let r = regexPatterns["Spells"].exec(feature);
+			if(r !== null)
+			{
+				selectRandom(r[2], this.spells[className].available);
+			}
+		});
+		
 	}
 	
 	setSkillProficiencies(className)
@@ -320,7 +332,7 @@ class Character {
 			this.setSkillProficiencies(className);
 
 		this.setSkillBonuses();
-		//this.setSpells(className);
+		this.setSpells(className);
 	}
 	
 	applyRace(raceName)
