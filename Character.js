@@ -471,10 +471,11 @@ class Character {
 	**/
 	applyLastThings ()
 	{
+		this.features.spellcasting = [];
 		this.features.race.forEach(f => 
 		{
 			let i = this.features.race.indexOf(f);
-			this.features.spellcasting = [];
+			
 			if(magicFeatures[f] !== undefined)
 			{
 				this.features.spellcasting.push(f);
@@ -560,6 +561,4 @@ class Character {
 		
 		
 	}
-
-	
 }
