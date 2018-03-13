@@ -1,7 +1,7 @@
-//Object.keys(abilities).length = 6;
-
 class Character {
-	constructor(){
+	
+	constructor()
+	{
 		this.abilities = 
 		{
 			"Strength" 		: 10,
@@ -18,27 +18,28 @@ class Character {
 			reaction : ["Opportunity Attack"],
 			free : ["Command / Talk", "Switch Weapon", "Environment Interaction"]
 		};
+		
+		this.appliedProficiencies = [];
+		
 		this.classe = "";
 		
 		this.identity = 
 		{
 			firstName : "Alun",
 			lastName  : "Umbra",
-		
-			age : "38",
+			age : "",
 			sex : "M",
-			height : "1m 81",
-			weight : "83 kg",
-			
-			hairColor : "Black",
-			eyesColor : "Green",
-			skinColor : "Cafey'O'Ley",
-			
-			personalityTraits : "Aventureux, fait preuve de compassion, malin, digne de confiance, agile, sneaky",
+			height : "",
+			weight : "",
+			hairColor : "",
+			eyesColor : "",
+			skinColor : "",
+			personalityTraits : "",
 			ideals : "Default",
 			bonds : "Halflings",
-			flaws : "Fumeur de pipe, gourmand, têtu, distrait, très curieux, booze. Un peu fainéant et trop ambitieux par moments!"
+			flaws : ""
 		}
+		
 		this.features = 
 		{
 			race   : [],
@@ -47,9 +48,8 @@ class Character {
 			feats  : []
 		};
 		
-		this.hitPoints = "";
-		
-		this.level = {
+		this.level = 
+		{
 			experience : 0,
 			level : 0,
 			proficiencyBonus : 2,
@@ -64,14 +64,13 @@ class Character {
 		};
 		
 		this.race = "";
-		this.armorClass = "";
+
 		this.speed = "";
 		
 		this.spells = {};
 		
-		this.background = "";
-		
-		this.skills = {
+		this.skills = 
+		{
 		  "Acrobatics": 		{ "isProficient": false, "isExpert": false, "bonus": 0, "relatedAbility": "Dexterity" },
 		  "Animal Handling": 	{ "isProficient": false, "isExpert": false, "bonus": 0, "relatedAbility": "Wisdom" },
 		  "Arcana": 			{ "isProficient": false, "isExpert": false, "bonus": 0, "relatedAbility": "Intelligence" },
@@ -92,25 +91,53 @@ class Character {
 		  "Survival": 			{ "isProficient": false, "isExpert": false, "bonus": 0, "relatedAbility": "Wisdom" }
 		};
 		
-		this.appliedProficiencies = 
-		[
+		this.hitPoints = "";
+		/**
+		TODO : 
+		this.armorClass = "";
+		this.background = "";
 		
-		];
+		this.resistances = [];
+		this.immunities = [];
 		this.equipment = [];
-	}
-		
-	setAbilities (array)
-	{
-		this.abilities["Strength"] = array[0];
-		this.abilities["Dexterity"] = array[1];	
-		this.abilities["Constitution"] = array[2];
-		this.abilities["Intelligence"] = array[3];
-		this.abilities["Wisdom"] = array[4];
-		this.abilities["Charisma"] = array[5];
-		this.setSkillBonuses();
+		**/
 	}
 	
-	load (json)
+	/**
+	Generates and returns a random character
+	let c = Character.getRandom(); works just fine.
+	let specificC = Character.getRandom({race : "Half-Orc", class : "Barbarian"}); will create a 
+	**/
+	static getRandom(param)
+	{
+		let r = new Character();
+		
+		r.setRandomAbilities();
+		if(param === undefined)
+		{
+			let rLevel = Math.floor(Math.random() * 19) + 1;
+			let rRace = selectRandom(1, raceList);
+			let rClass = selectRandom(1, classList);
+			r.applyClass(rClass[0], rLevel);
+			r.applyRace(rRace);
+		}
+		else
+		{
+			r.applyRace(param.race);
+			r.applyClass(param.classe.c, param.classe.level);
+		}
+		r.identity.firstName = selectRandom(1,raceNames[r.race]);
+		r.identity.lastName = selectRandom(1,raceNames[r.race]);
+		r.applyLastThings();
+		return r;
+	}	
+	
+	
+	/**
+	Sets the current object to be the one contained in the JSON data.
+	Used in association with <input type="file" />
+	**/
+	loadFromJSON (json)
 	{
 		this.abilities = json.abilities;
 		this.actions = json.actions;
@@ -130,17 +157,73 @@ class Character {
 		this.equipment = json.equipment;
 	}
 	
+	/**
+	Load the content of a JSON file into the current object.
+	Inserting <input='file' onchange="function(){c = Character.loadFromFile(this.files);} setup();" /> will set the value of c to the file's character
+	**/
+	static loadFromFile(file)
+	{
+		let fr = new FileReader();
+		fr.onload = function(event) {
+			// The file's text will be printed here
+			let J = JSON.parse(event.target.result);
+			c = c.loadFromJSON(J);
+			setup();
+		};
+		fr.readAsText(file[0]);
+	}
+		
+	/**
+	Sets the current object's ability scores to the one in the array.
+	Exemple this.setAbilities([10,10,10,10,10,10]) sets every score to 10;
+	**/
+	setAbilities (array)
+	{
+		this.abilities["Strength"] = array[0];
+		this.abilities["Dexterity"] = array[1];	
+		this.abilities["Constitution"] = array[2];
+		this.abilities["Intelligence"] = array[3];
+		this.abilities["Wisdom"] = array[4];
+		this.abilities["Charisma"] = array[5];
+		this.setSkillBonuses();
+	}
+	
+	/**
+	Saves the current object as a JSON file.
+	Inserting <button onclick="c.saveAsJSON()"> Save </button> will set you up with a save button
+	**/
+	saveAsJSON()
+	{
+		saveJSON(this, this.identity.firstName + " " + this.identity.lastName);
+	}
+	
+	/**
+	Rolls a d20 and add the skill bonus for the current character's "skill".
+	Displays the result as an alert on the page.
+	c.rollSkill("Acrobatics"); 
+	**/
 	rollSkill(skill)
 	{
 		let rand = Math.floor(random() * 19) + 1;
 		let res = rand + this.skills[skill].bonus;
-		console.log("" + skill + " : (" + rand +") + " + this.skills[skill].bonus + " = " + res);
+		alert("" + skill + " : (" + rand +") + " + this.skills[skill].bonus + " = " + res);
 	}
 	
+	/**
+	Calculates the ability bonus from the current character's "ability" score.
+	Returns a number.
+	c.getAbilityBonus("Strength"); returns 0 if c.abilities["Strength"] == 10
+	**/
 	getAbilityBonus (ability)
 	{
 		return Math.floor((this.abilities[ability] - 10) / 2);
 	}
+	
+	/**
+	Calculates the ability bonus from the current character's "ability" score.
+	Returns a number.
+	c.getAbilityBonus("Strength"); returns 0 if c.abilities["Strength"] == 10
+	**/
 	setRandomAbilities()
 	{
 		abilities.forEach(a => 
@@ -151,30 +234,12 @@ class Character {
 		})
 	}
 	
-	static getRandom(param)
-	{
-		let r = new Character();
-		
-		r.setRandomAbilities();
-		if(param === undefined)
-		{
-			let rLevel = Math.floor(Math.random() * 19) + 1;
-			let rRace = selectRandom(1, raceList);
-			let rClass = selectRandom(1, classList);
-			r.applyRace(rRace[0]);
-			r.applyClass(rClass[0], rLevel);	
-		}
-		else
-		{
-			r.applyRace(param.race);
-			r.applyClass(param.classe.c, param.classe.level);
-		}
-		r.identity.firstName = selectRandom(1,raceNames[r.race]);
-		r.identity.lastName = selectRandom(1,raceNames[r.race]);
-		r.applyLastThings();
-		return r;
-	}
 	
+	/**
+	Sets the Weapons, Armor, Tools & Language proficiencies of a given class to the current character's proficiencies
+	c.setProficiencies("Barbarian") will give c.proficiencies new stuff
+	TODO : check page 164 PHB to realize proper multiclassing
+	**/
 	setProficiencies(className)
 	{
 		// Proficiencies
@@ -182,7 +247,7 @@ class Character {
 			classProficiencies[className].weapons.forEach(p => {if(!(this.proficiencies.weapons.indexOf(p) > -1)){this.proficiencies.weapons.push(p)}});
 		
 		if(classProficiencies[className].armor !== undefined )
-			classProficiencies[className].armor.forEach(p => {if(!(this.proficiencies.armor.indexOf(p) > -1)){this.proficiencies.armor.push(p)}});
+			classProficiencies[className].armor.forEach(p => {if(!(this.proficiencies.armor.indexOf(p) > -1)){armorTypes[p].forEach(a => this.proficiencies.armor.push(a))}});
 		
 		if(classProficiencies[className].tools !== undefined)
 			classProficiencies[className].tools.forEach(p => {if(!(this.proficiencies.tools.indexOf(p) > -1)){this.proficiencies.tools.push(p)}});
@@ -191,10 +256,10 @@ class Character {
 			classProficiencies[className].languages.forEach(p => {if(!(this.proficiencies.languages.indexOf(p) > -1)){this.proficiencies.languages.push(p)}});
 	}
 	
-	getProficiencies()
-	{
-	}
-	
+	/**
+	Sets the class features of a class at a certain level to the current character's feature list
+	c.setClassFeatures("Barbarian",1) will give c.features.class new stuff
+	**/
 	setClassFeatures(className, level)
 	{
 		// For every level, check every class feature
@@ -203,7 +268,7 @@ class Character {
 			classFeatures[className][lvl.toString()].forEach(feature => 
 			{
 				//Check if the feature evolves over time or not
-				reg[className].forEach(i => 
+				classRegexList[className].forEach(i => 
 				{
 					if(regexPatterns[i].exec(feature) !== null)
 					{
@@ -222,16 +287,21 @@ class Character {
 		}
 	}
 	
+	/**
+	Sets the spells of a class to the current character's feature list
+	c.setSpells("Wizard") will add the accessible Wizard spells to the c.spells["Wizard"].known and to c.spells["Wizard"].available.
+	TODO : spellslot calculation for Warlocks. Oh, also, make it work.
+	**/
 	setSpells (className)
 	{
-		this.spells[className] = [];
+		this.spells[className] = {};
 		
 		// Check what level of spellslots you have
 		let spellLevel = 0;
 		this.features.classe.forEach( feature => 
 		{
 			let r = regexPatterns["Spell Slots"].exec(feature);
-			if(r !== null)
+			if(r !== null && r[0] === className)
 			{
 				for(let i = 1; i < r.length - 2; i++)
 				{
@@ -244,9 +314,10 @@ class Character {
 			}
 		});
 		// List available spells
-		if(classSpells[className] !== undefined)
+		if(classSpells[className] !== undefined && spellLevel != 0)
 		{
 			this.spells[className].available = [];
+			this.spells[className].known = [];
 			classSpells[className].forEach( spell => 
 			{
 				if(spell.level[0] <= spellLevel)
@@ -254,19 +325,34 @@ class Character {
 					this.spells[className].available.push(spell);
 				}
 			});
-		}
 		
-		this.features.classe.forEach( feature => 
-		{
-			let r = regexPatterns["Spells"].exec(feature);
-			if(r !== null)
+			if(className === "Druid" || className === "Cleric" )
 			{
-				selectRandom(r[2], this.spells[className].available);
+				this.spells[className].known = this.spells[className].available;
 			}
-		});
-		
+			else if(className === "Wizard")
+			{
+				this.spells[className].known = selectRandom(6, this.spells[className].available);
+			}
+			else 
+			{
+				this.features.classe.forEach( feature => 
+				{
+					let r = regexPatterns["Spells"].exec(feature);
+					if(r !== null)
+					{
+						this.spells[className].known = selectRandom(r[2], this.spells[className].available);
+					}
+				});
+			}
+		}
 	}
 	
+	/**
+	Sets the random skill proficiencies for the given raceName
+	c.setSkillProficiencies("Wizard") will add the starting Wizard skill proficiencies
+	Will not work if another class has already been picked.
+	**/
 	setSkillProficiencies(className)
 	{
 		// Skill proficiencies
@@ -290,6 +376,9 @@ class Character {
 		this.appliedProficiencies.push(pr);
 	}
 	
+	/**
+	Sets the skill bonuses according to proficiency and expertise flag
+	**/
 	setSkillBonuses ()
 	{
 		abilities.forEach( a => 
@@ -307,6 +396,10 @@ class Character {
 		});
 	}
 	
+	/**
+	Adds the given class at the given level for the current character.
+	TODO : check page 164 PHB to realize proper multiclassing	
+	**/
 	applyClass(className, level)
 	{
 		if(this.classe !== "")
@@ -335,11 +428,17 @@ class Character {
 		this.setSpells(className);
 	}
 	
+	/**
+	Replaces the current character's race by given raceName
+	**/
 	applyRace(raceName)
 	{
-		this.race = raceName;
-		this.speed = raceSpeeds[raceName][0];
+		if(this.race != "")
+		{
+			abilities.forEach(a => {if(raceAbilities[this.race].hasOwnProperty(a)){this.abilities[a] -= raceAbilities[this.race][a]}});
+		}
 		
+		this.speed = raceSpeeds[raceName][0];
 		// Apply ability score
 		if(raceAbilities[raceName] !== undefined)
 			abilities.forEach(a => {if(raceAbilities[raceName].hasOwnProperty(a)){this.abilities[a] += raceAbilities[raceName][a]}});
@@ -364,13 +463,23 @@ class Character {
 			if(this.features.race.indexOf(f) === -1) { this.features.race.push(f) }	
 		});
 		this.setSkillBonuses();
+		this.race = raceName;
 	}
 	
+	/**
+	Goes through all the race and class features and updates them accordingly.
+	**/
 	applyLastThings ()
 	{
 		this.features.race.forEach(f => 
 		{
 			let i = this.features.race.indexOf(f);
+			this.features.spellcasting = [];
+			if(magicFeatures[f] !== undefined)
+			{
+				this.features.spellcasting.push(f);
+				delete this.features.race[i];
+			}
 			if(f == "One Extra Language")
 			{
 				let unknownLanguages = [];
@@ -397,9 +506,24 @@ class Character {
 				delete this.features.race[i];
 			}
 		});
+		
 		this.features.classe.forEach(f => 
 		{
 			let i = this.features.classe.indexOf(f);
+			/*Look for spellcasting features*/
+			if(magicFeatures[f] !== undefined)
+			{
+				this.features.spellcasting.push(f);
+				delete this.features.classe[i];
+			}
+			magicRegex.forEach( m =>
+			{
+				if(regexPatterns[m].exec(f) !== null)
+				{
+					this.features.spellcasting.push(f);
+					delete this.features.classe[i];
+				}
+			});
 			if(f == "Expertise")
 			{
 				let knownSkills = [];
@@ -425,9 +549,17 @@ class Character {
 				this.appliedProficiencies.push({name : f, chosen : choice});
 				delete this.features.classe[i];
 			}
+			if(f == "Primal Champion")
+			{
+				this.abilities["Strength"] += 4;
+				this.abilities["Constitution"] += 4;
+				delete this.features.classe[i];
+			}
 			this.setSkillBonuses();
 		});
 		
 		
 	}
+
+	
 }
