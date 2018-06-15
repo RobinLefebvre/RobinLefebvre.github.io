@@ -138,6 +138,7 @@ class Point {
     }
   
     query(range, found, threshold) {
+       if(threshold === undefined) threshold = 1000000;
       if (!found) {
         found = [];
       }
