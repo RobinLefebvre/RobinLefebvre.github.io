@@ -137,12 +137,12 @@ class Point {
         this.southeast.insert(point) || this.southwest.insert(point));
     }
   
-    query(range, found) {
+    query(range, found, threshold) {
       if (!found) {
         found = [];
       }
   
-      if (!range.intersects(this.boundary)) {
+      if (!range.intersects(this.boundary) || threshold == 0) {
         return found;
       }
   
@@ -152,10 +152,10 @@ class Point {
         }
       }
       if (this.divided) {
-        this.northwest.query(range, found);
-        this.northeast.query(range, found);
-        this.southwest.query(range, found);
-        this.southeast.query(range, found);
+        this.northwest.query(range, found,threshold--);
+        this.northeast.query(range, found,threshold--);
+        this.southwest.query(range, found,threshold--);
+        this.southeast.query(range, found,threshold--);
       }
   
       return found;
