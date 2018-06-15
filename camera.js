@@ -235,7 +235,7 @@ class Camera
 
     displayTacticalOverlay()
     {
-        let pos = this.mapPosition.copy();
+        let pos = createVector(this.mapPosition.x, this.mapPosition.y);
         let dim = createVector(50,50);
         noFill();
         strokeWeight(1);
