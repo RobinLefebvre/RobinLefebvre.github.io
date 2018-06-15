@@ -235,8 +235,8 @@ class Camera
 
     displayTacticalOverlay()
     {
-        let pos = playerEntity.position.copy();
-        let dim = playerEntity.dimension.copy();
+        let pos = this.mapPosition.copy();
+        let dim = createVector(50,50);
         noFill();
         strokeWeight(1);
 
