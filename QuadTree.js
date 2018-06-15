@@ -153,10 +153,11 @@ class Point {
         }
       }
       if (this.divided) {
-        this.northwest.query(range, found,threshold--);
-        this.northeast.query(range, found,threshold--);
-        this.southwest.query(range, found,threshold--);
-        this.southeast.query(range, found,threshold--);
+          let tt = threshold--;
+        this.northwest.query(range, found,tt);
+        this.northeast.query(range, found,tt);
+        this.southwest.query(range, found,tt);
+        this.southeast.query(range, found,tt);
       }
   
       return found;
