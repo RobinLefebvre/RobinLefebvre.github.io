@@ -2,31 +2,40 @@
 class Camera
 {
     /** Constructor for Camera
-     * @param {*} anchor  : the entity to be anchored to*/
-    constructor(anchor)
+     * @param {*} anchor  : the entity to be anchored to
+     * @param {*} anchor  : the entity to be anchored to
+    */
+    constructor(params)
     {
-        /** this.mapPosition
-         *  this.screenCenterPoint
-         *  this.screenSize;
-         *  this.screenRatio;
-         *  this.clicksPerPixel
-         */
-        // displayedMeters is the distance showed on the smallest screen dimension (default value : 1000 meters over screen height)
-        this.displayedClicks = 100000;
-
-        // camera is anchored to an entity with a position on the map (expressed in x - y click from 0 to mapSize)
-        this.anchor = anchor;
-        this.mapPosition = anchor.position;
+        // displayedMeters is the distance showed on the screen 
+        if(params.displayedClicks !== undefined) 
+        {
+            this.displayedClicks = params.displayedClicks;
+        }
+        else
+        {
+            this.displayedClicks = 100000; 
+        }
         
-        //this.screenCenterPoint
+        // camera is anchored to an entity which defines it's position in the world
+        if(params.position !== undefined)
+        {
+            this.anchor = params;
+            this.mapPosition = params.position;
+        }
+        else
+        {
+            this.mapPosition = {x : 100000, y : 100000 };
+            this.anchor = { position : this.mapPosition };
+        }
+
         this.setScreenCenterPoint();
         this.setScreenSize();
         this.setMapDimensions();
         this.setClicksPerPixel();
     }
 
-    /** Sets this.mapPosition vector according to the current anchor. If we change anchor, then slide towards the new target.
-     */
+    /** Sets this.mapPosition vector according to the current anchor. If we change anchor, then slide towards the new target. */
     setMapPosition()
     {
         let anch = this.anchor.position.copy();
@@ -72,7 +81,7 @@ class Camera
         }
     }
 
-    /** Sets this.mapDimensions vector with the amount of clicks visible on both dimensions */
+    /** Sets this.mapDimensions vector with the amount of clicks visible on the screen in both dimensions */
     setMapDimensions()
     {
         let w; let h;
