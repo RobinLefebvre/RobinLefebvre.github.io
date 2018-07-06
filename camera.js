@@ -94,7 +94,24 @@ class Camera
     {
         this.clicksPerPixel = this.displayedClicks / this.screenSize;
     }
+    
+    /** Returns a Vector with the clicks position from a given Entity's position on the screen
+     * @param {*} x : the x position in pixels
+     * @param {*} y : the y position in pixels
+     */
+    screenPointToMapPoint(x,y)
+    {
+        let deltaX = x - this.screenCenterPosition.x;
+        let deltaY = y - this.screenCenterPosition.y;
+        
+        let clickDeltaX = floor(deltaX * this.clicksPerPixel);
+        let clickDeltaY = floor(deltaY * this.clicksPerPixel);
 
+        let posX =  clickDeltaX + this.screenCenterPoint.x;
+        let posY =  clickDeltaY + this.screenCenterPoint.y;
+        return createVector(posX, posY);
+    }
+    
     /** Returns a Vector with the pixel position of a given Entity's position
      * @param {*} x : the x position in clicks
      * @param {*} y : the y position in clicks
