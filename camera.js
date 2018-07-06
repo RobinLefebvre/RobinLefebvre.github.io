@@ -110,8 +110,8 @@ class Camera
      */
     screenPointToMapPoint(x,y)
     {
-        let deltaX = x - this.screenCenterPosition.x;
-        let deltaY = y - this.screenCenterPosition.y;
+        let deltaX = x - this.screenCenterPoint.x;
+        let deltaY = y - this.screenCenterPoint.y;
         
         let clickDeltaX = floor(deltaX * this.clicksPerPixel);
         let clickDeltaY = floor(deltaY * this.clicksPerPixel);
