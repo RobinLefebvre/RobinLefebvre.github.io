@@ -116,8 +116,8 @@ class Camera
         let clickDeltaX = floor(deltaX * this.clicksPerPixel);
         let clickDeltaY = floor(deltaY * this.clicksPerPixel);
 
-        let posX =  clickDeltaX + this.screenCenterPoint.x;
-        let posY =  clickDeltaY + this.screenCenterPoint.y;
+        let posX =  clickDeltaX + this.mapPosition.x;
+        let posY =  clickDeltaY + this.mapPosition.y;
         return createVector(posX, posY);
     }
     
