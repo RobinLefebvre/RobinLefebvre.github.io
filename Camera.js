@@ -193,7 +193,7 @@ class Camera
         let shape = [];
         for(var i = -(PI/pointsAmount); i < TWO_PI - 2 * (PI/pointsAmount); i += TWO_PI / pointsAmount)
         {
-            let n = noise(frameCount / 50, i);
+            let n = noise(frameCount / 50, y+radius + i);
             let r = map(n, 0, 1, -radius*randomize, radius * randomize);
             //let r = random(-radius * randomize, radius * randomize);
             
@@ -278,32 +278,40 @@ class Camera
             
             if(entity.name)
             { 
-                textSize(dim.x * 0.8);
-                textAlign(CENTER);
-
-                fill(255, 255, 255, 200);
-                stroke(0,0,0,175);
-                strokeWeight(3);
-
-                text(`${entity.name}`, pos.x, pos.y + dim.x / 8);
-                textSize(12);
-                textAlign(LEFT);
+                if(dim.x > 20)
+                {
+                    if(dim.x <= 40)
+                    {
+                        this.displayText(pos, dim.x / 2, entity.name)
+                    }
+                    else if(dim.x > 40)
+                    {
+                        this.displayText(pos, 20, entity.name)
+                    }
+                }
             }
             return [pos.x, pos.y];
         }
         return false;
     }
-
     /** Displays a closed polygon on the screen.
      * @param {*} area : Polygon to be displayed {position}
      * @returns Array with position X and Y of the area on the screen || false
     */
     displayArea(area)
     {
-        noStroke();
-        let ct = color(area.coloration.levels[0], area.coloration.levels[1], area.coloration.levels[2], area.coloration.levels[3])
-        let c = ct || color(0,0,0,150);
+        if(area.stk)
+            stroke( color(area.stk.levels[0], area.stk.levels[1], area.stk.levels[2], area.stk.levels[3] ))
+        else
+            noStroke();
+            
+        let ct;
+        if(area.coloration)
+        {
+            ct = color(area.coloration.levels[0], area.coloration.levels[1], area.coloration.levels[2], area.coloration.levels[3])
+        }
 
+        let c = ct || color(0,0,0,150);
         fill(c);
 
         if(area.shape)
@@ -327,7 +335,7 @@ class Camera
             size = floor(size / area.shape.length );
 
             // If the name exists and the shape size is between boundaries, display the name
-            if(area.name && size > 20)
+            if(area.name && size > 30)
             {
                 if(size <= 60)
                 {
@@ -343,7 +351,29 @@ class Camera
         }
         return false;
     }
+    /**Displays a grid on the map with length of square side = size*/
+    displayGrid(size)
+    {
+        for(let i = 0; i <= this.mapBoundaries.max; i+= size)
+        {
+            let p1 = {x: i, y: 0};
+            let p2 = {x : i, y: this.mapBoundaries.max};
+            
+            let l21 = {x: 0, y: i};
+            let l22 = {x : this.mapBoundaries.max, y: i};
 
+            strokeWeight(2);
+            stroke(0,0,0,100);
+            let sp1 = this.mapPointToScreenPoint(p1.x, p1.y);
+            let sp2 = this.mapPointToScreenPoint(p2.x, p2.y);
+            line(sp1.x, sp1.y, sp2.x, sp2.y);
+
+            l21 = this.mapPointToScreenPoint(l21.x, l21.y);
+            l22 = this.mapPointToScreenPoint(l22.x, l22.y);
+            line(l21.x, l21.y, l22.x, l22.y);
+
+        }
+    }
     /** Displays a focus area around an entity
      * @param {*} entity : possibly a Troop
     */
@@ -369,7 +399,7 @@ class Camera
         text(`${message}`, screenPos.x, screenPos.y);
         textAlign(LEFT);
     }
-    displayMeasure(start)
+    displayMeasure(start, units)
     {
         let mousePos = this.screenPointToMapPoint(mouseX, mouseY);
         mousePos = createVector(mousePos.x, mousePos.y);
@@ -385,11 +415,11 @@ class Camera
         line(screenStart.x, screenStart.y, mouseX, mouseY);
        
         textSize(12);
-        text(`${floor(d/100)} m.`, mouseX + 5, mouseY + 5);
+        text(`${floor(d/units.value)} ${units.name}.`, mouseX + 5, mouseY + 5);
     }
 
     /** Displays the area around a troop which is equal to its movement */
-    displayMovement(troop, otherTroops)
+    displayMovement(troop, otherTroops, areas)
     {
         if(troop.movement > 0)
         {
@@ -399,28 +429,24 @@ class Camera
             fill(col);
             ellipse(pos.x, pos.y, dim.x, dim.y);
     
-            let mouseMapPos = this.screenPointToMapPoint(mouseX, mouseY);
-            mouseMapPos = createVector(mouseMapPos.x, mouseMapPos.y);
-    
-            if(mouseMapPos.copy().dist(createVector(troop.position.x, troop.position.y)) < troop.movement)
+            if(otherTroops && areas)
             {
-                let flag = true;
-                otherTroops.forEach(oT =>
+                let mouseMapPos = this.screenPointToMapPoint(mouseX, mouseY);
+                mouseMapPos = createVector(mouseMapPos.x, mouseMapPos.y);
+        
+                if(mouseMapPos.copy().dist(createVector(troop.position.x, troop.position.y)) < troop.movement)
                 {
-                    if(mouseMapPos.copy().dist(createVector(oT.position.x, oT.position.y)) < oT.dimension.x + troop.dimension.x)
-                    {
-                        flag = false;
-                    }
-                })
-                if(flag)
-                    fill(0,250,0,100);
-                else
-                    fill(250,0,0,100);
-
-                let tDim = this.mapDimensionsToScreen(troop.dimension.x, troop.dimension.y)
-                ellipse(mouseX, mouseY, tDim.x, tDim.y);
-                stroke(col);
-                line(mouseX, mouseY, pos.x, pos.y);
+                    let flag = troop.intersects(mouseMapPos, otherTroops, areas); 
+                    if(flag)
+                        fill(250,0,0,70);
+                    else
+                        fill(0,250,0,70);
+    
+                    let tDim = this.mapDimensionsToScreen(troop.dimension.x, troop.dimension.y)
+                    ellipse(mouseX, mouseY, tDim.x, tDim.y);
+                    stroke(col);
+                    line(mouseX, mouseY, pos.x, pos.y);
+                }
             }
         }
     }
@@ -429,22 +455,19 @@ class Camera
     displayAction(troop, action, otherTroops)
     {
         let pos = this.mapPointToScreenPoint(troop.position.x, troop.position.y);
-        let dim = this.mapDimensionsToScreen(troop.dimension.x + action.reach, troop.dimension.y +  action.reach) ;
+        let dim = this.mapDimensionsToScreen(troop.dimension.x + action.reach, troop.dimension.y + action.reach) ;
         let col = color(troop.stk.levels[0],troop.stk.levels[1],troop.stk.levels[2],70);
 
         let aoe = this.mapDimensionsToScreen(action.areaEffect, action.areaEffect);
-
-        let troops =  getAffectedTroops(troop, action, otherTroops)
-        troops.forEach(t => 
-        {
-            let screenTroop = this.mapPointToScreenPoint(t.position.x, t.position.y);
-            let dTroop = this.mapDimensionsToScreen(t.dimension.x, t.dimension.y);
-            ellipse(screenTroop.x, screenTroop.y, dTroop.x - 2, dTroop.y- 2);
-        })
-        
         noFill();
+        stroke(col);
         ellipse(mouseX, mouseY, aoe.x, aoe.y);
 
+        if(otherTroops !== undefined)
+        {
+            let troops =  getAffectedTroops(troop, action, otherTroops)
+            troops.forEach(index => {this.displayFocus(otherTroops[index])} );
+        }
         stroke(col);
         fill(255,255,255,20);
         ellipse(pos.x, pos.y, dim.x, dim.y);
