@@ -312,7 +312,7 @@ class Camera
         if(area.shape)
         {
             // Compute centroid
-            let shapeCentroid = centroid(area);
+            let shapeCentroid = this.centroid(area);
             shapeCentroid = this.mapPointToScreenPoint(shapeCentroid.x, shapeCentroid.y);
             shapeCentroid = createVector(shapeCentroid.x, shapeCentroid.y);
 
