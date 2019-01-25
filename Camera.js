@@ -3,14 +3,12 @@ class Camera
     constructor(anchor)
     {
         ellipseMode(RADIUS);
-
         // Boundaries in zoom  (clicksPerScreen) and position (clicksPerMap)
         this.zoomBoundaries = {min : 100, max : 8000}
         this.mapBoundaries = {min : 0, max : 4000}
 
         // Gives the amount of clicks (cm.) to be displayed at startup.
         this.displayedClicks = floor(this.zoomBoundaries.max / 2.5);
-
 
         // camera is anchored to an entity with a position on the map (expressed in x - y click from 0 to mapSize)
         this.anchor = anchor || {position : {x: round(this.mapBoundaries.max / 2), y:round(this.mapBoundaries.max / 2)}};
@@ -23,10 +21,10 @@ class Camera
         this.setClicksPerPixel();
     }
 
-    /** Set this.anchor
-     * @param {*} args : Troop or Screen Point -
+    /** Set this.anchor to the parameter object, or returns false
+     * @param {*} args : Entity (or Child) ||  Screen Point
      * Passing a Troop takes the dimension into account for Tactical Overlay and centers the Camera onto Troop's position. 
-     * Passing a Screen Point checks if there is a Troop. */
+     * Passing a Screen Point and an array of Troops checks if there is a Troop to anchor to. */
     setAnchor(args)
     {
         if(args.position && args.dimension)
@@ -36,19 +34,13 @@ class Camera
         }
         else if(args.screenPos && args.troops)
         {
-            let p = this.screenPointToMapPoint(args.screenPos.x, args.screenPos.y);
-            p = createVector(p.x, p.y);
-            args.troops.forEach(t => 
-            {
-                if( p.copy().dist(createVector(t.position.x, t.position.y)) < t.dimension.x )
-                {
-                    return this.setAnchor(t);
-                }
-            })
+            let t = this.getEntity(args.screenPos, args.troops);
+            if(t)
+                return this.setAnchor(t);
         }
         return false;
-        
     }
+
     /** Sets this.mapBoundaries and this.zoomBoundaries according to the size arguments.
      * @param {*} size : The clicks size of the map to display. */
     setMap(size)
@@ -173,7 +165,7 @@ class Camera
 
         let posX =  pixelDeltaX + this.mapPosition.x;
         let posY =  pixelDeltaY + this.mapPosition.y;
-        return createVector(posX, posY);
+        return createVector(floor(posX), floor(posY) );
     }
 
     /** Returns a Vector with the pixel dimension of a given Entity's dimension
@@ -188,15 +180,14 @@ class Camera
         return createVector(xx,yy);
     }
 
+    /** Returns an array of points for a polygon on the map */
     getShape(x, y, radius, pointsAmount, randomize )
     {
         let shape = [];
         for(var i = -(PI/pointsAmount); i < TWO_PI - 2 * (PI/pointsAmount); i += TWO_PI / pointsAmount)
         {
-            let n = noise(frameCount / 50, y+radius + i);
-            let r = map(n, 0, 1, -radius*randomize, radius * randomize);
-            //let r = random(-radius * randomize, radius * randomize);
-            
+            let n = noise(frameCount / 50, x + y + radius + i); // Selecting a random noise point
+            let r = map(n, 0, 1, -radius*randomize, radius * randomize); // Mapping that noise point to Radius according to the random factor
             let v = 
             {
                 x :  Math.floor( x + (radius + r) * sin(i) ),
@@ -206,7 +197,21 @@ class Camera
         }
         return shape;
     }
-    
+    /** Returns an entity if there is one at the Screen point */
+    getEntity(screenPos, troops)
+    {
+        let flag;
+        let p = this.screenPointToMapPoint(screenPos.x, screenPos.y);
+        p = createVector(p.x, p.y);
+        troops.forEach(t => 
+        {
+            if( p.copy().dist(createVector(t.position.x, t.position.y)) < t.dimension.x )
+            {
+                flag = t;
+            }
+        })
+        return flag;
+    }
     /** Determines if an entity is on screen currently (entity can be a point or ellipse) */
     isOnScreen(entity)
     {
@@ -253,6 +258,10 @@ class Camera
     */
     displayEntity(entity)
     {
+        if(!entity.position)
+        {
+            return false;
+        }
         if(this.isOnScreen(entity))
         {
             let pos = this.mapPointToScreenPoint(entity.position.x, entity.position.y);
@@ -276,20 +285,6 @@ class Camera
             ellipse(pos.x, pos.y, dim.x, dim.y);
             noStroke();
             
-            if(entity.name)
-            { 
-                if(dim.x > 20)
-                {
-                    if(dim.x <= 40)
-                    {
-                        this.displayText(pos, dim.x / 2, entity.name)
-                    }
-                    else if(dim.x > 40)
-                    {
-                        this.displayText(pos, 20, entity.name)
-                    }
-                }
-            }
             return [pos.x, pos.y];
         }
         return false;
@@ -376,8 +371,9 @@ class Camera
     }
     /** Displays a focus area around an entity
      * @param {*} entity : possibly a Troop
+     * @param {boolean} name : flag to add name display;
     */
-    displayFocus(entity)
+    displayFocus(entity, name)
     {
         let pos = this.mapPointToScreenPoint(entity.position.x, entity.position.y);
         let dim = this.mapDimensionsToScreen(entity.dimension.x + 10, entity.dimension.y + 10);
@@ -388,11 +384,39 @@ class Camera
         
         stroke(255,255,255,255);
         ellipse(pos.x, pos.y, dim.x - 2, dim.y - 2 );
+
+
+        if(entity.name && name)
+        {
+            pos.y += dim.y; // Move the display down
+
+            let text = ``; // Figure out the entity's name / text 
+            if(entity.getName)
+                text = entity.getName();
+            else   
+                text = entity.name;
+            
+            // Display according to the dimension of the Entity on the screen
+            if(dim.x > 10)
+            {
+                if(dim.x <= 45)
+                {
+                    pos.y += dim.y/1.5;
+                    this.displayText(pos, dim.x / 1.5, text)
+                }
+                else if(dim.x > 45)
+                {
+                    pos.y += 30
+                    this.displayText(pos, 30, text)
+                }
+            }
+        }
     }
+
     displayText(screenPos, fontSize, message)
     {
         fill(255,255,255,175);
-        textAlign(CENTER);
+        textAlign(CENTER, BASELINE);
         stroke(0,0,0,175);
         strokeWeight(3);
         textSize(fontSize);
@@ -414,7 +438,7 @@ class Camera
 
         line(screenStart.x, screenStart.y, mouseX, mouseY);
        
-        textSize(12);
+        textSize(16);
         text(`${floor(d/units.value)} ${units.name}.`, mouseX + 5, mouseY + 5);
     }
 
@@ -456,10 +480,11 @@ class Camera
     {
         let pos = this.mapPointToScreenPoint(troop.position.x, troop.position.y);
         let dim = this.mapDimensionsToScreen(troop.dimension.x + action.reach, troop.dimension.y + action.reach) ;
-        let col = color(troop.stk.levels[0],troop.stk.levels[1],troop.stk.levels[2],70);
+        let col = color(troop.stk.levels[0],troop.stk.levels[1],troop.stk.levels[2], 250);
 
         let aoe = this.mapDimensionsToScreen(action.areaEffect, action.areaEffect);
-        noFill();
+        fill(col);
+        strokeWeight(8);
         stroke(col);
         ellipse(mouseX, mouseY, aoe.x, aoe.y);
 
@@ -533,7 +558,7 @@ class Camera
                     {
                         strokeWeight(1);
                         fill(0,0,0,3);
-                        stroke(200,200,200,50);
+                        stroke(0,0,0,150);
                         ellipse(screenCenter.x, screenCenter.y, da.x, da.y);
                         line(screenCenter.x , screenCenter.y - da.y, screenCenter.x, screenCenter.y + da.y)
                         line(screenCenter.x - da.x , screenCenter.y, screenCenter.x + da.x, screenCenter.y)
@@ -550,7 +575,7 @@ class Camera
                         if(a !== 10 && a !== 0)
                         {
                             textSize(12);
-                            fill(250,250,250,250);
+                            fill(0,0,0,250);
                             text("" + (a * exp) / 100 + " m", screenCenter.x + 5, screenCenter.y + (da.y) +2)
                             text("" + (a * exp) / 100 + " m", screenCenter.x + 5, screenCenter.y - (da.y) +2)
                             
@@ -594,24 +619,24 @@ class Camera
 
         if(keyIsDown(UP_ARROW) && this.mapPosition.y > this.mapBoundaries.min)
         {
-            this.mapPosition.y -= speed;
+            this.mapPosition.y -= round(speed);
             this.anchor = undefined;
         }
 
         if(keyIsDown(DOWN_ARROW) && this.mapPosition.y < this.mapBoundaries.max)
         {
-            this.mapPosition.y += speed;
+            this.mapPosition.y += round(speed);
             this.anchor = undefined;
         }
 
         if(keyIsDown(LEFT_ARROW) && this.mapPosition.x > this.mapBoundaries.min)
         {
-            this.mapPosition.x -= speed;
+            this.mapPosition.x -= round(speed);
             this.anchor = undefined;
         }
         if(keyIsDown(RIGHT_ARROW) && this.mapPosition.x < this.mapBoundaries.max)
         {
-            this.mapPosition.x += speed;
+            this.mapPosition.x += round(speed);
             this.anchor = undefined;
 
         }
@@ -644,4 +669,47 @@ class Camera
         this.setClicksPerPixel();
         return false;
     }
+
+    /**RANDOM GLOBAL STUFF */
+    centroid(area)
+    {
+        let vertices = area.shape
+        let centroid = createVector(0, 0);
+        let signedArea = 0.0;
+        let x0 = 0.0; // Current vertex X
+        let y0 = 0.0; // Current vertex Y
+        let x1 = 0.0; // Next vertex X
+        let y1 = 0.0; // Next vertex Y
+        let a = 0.0;  // Partial signed area
+
+        // For all vertices except last
+        let i = 0
+        for (i = 0; i < vertices.length-1; i++)
+        {
+            x0 = vertices[i].x;
+            y0 = vertices[i].y;
+            x1 = vertices[i+1].x;
+            y1 = vertices[i+1].y;
+            a = x0*y1 - x1*y0;
+            signedArea += a;
+            centroid.x += (x0 + x1)*a;
+            centroid.y += (y0 + y1)*a;
+        }
+
+        // Do last vertex separately to avoid performing an expensive
+        // modulus operation in each iteration.
+        x0 = vertices[i].x;
+        y0 = vertices[i].y;
+        x1 = vertices[0].x;
+        y1 = vertices[0].y;
+        a = x0*y1 - x1*y0;
+        signedArea += a;
+        centroid.x += (x0 + x1)*a;
+        centroid.y += (y0 + y1)*a;
+
+        signedArea *= 0.5;
+        centroid.x /= (6.0*signedArea);
+        centroid.y /= (6.0*signedArea);
+        return {x: floor(centroid.x), y:floor(centroid.y)};
+    } 
 }
