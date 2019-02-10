@@ -49,6 +49,10 @@ class Camera
         this.mapBoundaries.max = size; 
         this.zoomBoundaries.max = floor(size * 2);
         this.centerMapPosition();
+
+        this.displayedClicks = this.zoomBoundaries.max;
+        this.setMapDimensions();
+        this.setClicksPerPixel();
     }
 
     /** Sets this.mapPosition vector according to the center of the mapBoundaries*/
@@ -181,12 +185,17 @@ class Camera
     }
 
     /** Returns an array of points for a polygon on the map */
-    getShape(x, y, radius, pointsAmount, randomize )
+    getShape(x, y, radius, pointsAmount, randomize, noiseValue, startingRotation)
     {
         let shape = [];
-        for(var i = -(PI/pointsAmount); i < TWO_PI - 2 * (PI/pointsAmount); i += TWO_PI / pointsAmount)
+        let r = 0;
+        if(startingRotation)
+            r = startingRotation
+        console.log(r);
+        for(var i = -(PI/pointsAmount) + r; i < TWO_PI - (PI/pointsAmount) + r; i += TWO_PI / pointsAmount)
         {
-            let n = noise(frameCount / 50, x + y + radius + i); // Selecting a random noise point
+            let n = (noiseValue === undefined) ? noise(frameCount / 50, x + y + radius + i) : noise(frameCount / 50, noiseValue.x + noiseValue.y + radius + i)
+            
             let r = map(n, 0, 1, -radius*randomize, radius * randomize); // Mapping that noise point to Radius according to the random factor
             let v = 
             {
@@ -276,7 +285,7 @@ class Camera
             }
 
             let str = entity.stk || color(250, 250, 250, 150);
-            strokeWeight(2);
+            strokeWeight(3);
             stroke(str);
 
             let c = entity.coloration || color(0, 0, 0, 150);
@@ -295,6 +304,9 @@ class Camera
     */
     displayArea(area)
     {
+
+
+
         if(area.stk)
             stroke( color(area.stk.levels[0], area.stk.levels[1], area.stk.levels[2], area.stk.levels[3] ))
         else
@@ -305,9 +317,30 @@ class Camera
         {
             ct = color(area.coloration.levels[0], area.coloration.levels[1], area.coloration.levels[2], area.coloration.levels[3])
         }
-
         let c = ct || color(0,0,0,150);
         fill(c);
+
+        if(area.animatedColor)
+        {
+            if(frameCount % area.animatedColor == 0)
+            {
+                area.nextColor = color(random(255), random(255), random(255), area.coloration.levels[3])
+            }
+            else if (area.nextColor)
+            {
+                area.coloration = lerpColor(area.coloration, area.nextColor, (frameCount % area.animatedColor / area.animatedColor) / 100 );
+            }
+        }
+        if(area.randomWalk && area.noise)
+        {
+            area.position.x += floor( map( floor(noise(frameCount / 50, area.noise.x) * area.randomWalk), 0, area.randomWalk -1, -area.randomWalk+1, area.randomWalk ) )
+            area.position.y += floor( map( floor(noise(frameCount / 50, area.noise.y) * area.randomWalk), 0, area.randomWalk-1, -area.randomWalk+1, area.randomWalk ) )
+            area.shape = camera.getShape(area.position.x, area.position.y, area.radius, area.pointsAmount, area.randomize, area.noise);
+        }
+        else if(area.animated)
+        {
+            area.shape = camera.getShape(area.position.x, area.position.y, area.radius, area.pointsAmount, area.randomize);
+        }
 
         if(area.shape)
         {
@@ -341,6 +374,7 @@ class Camera
                     this.displayText(shapeCentroid, 15, area.name)
                 }
             }
+            
             // Return the pixel position of the shape's centroid, because why not.
             return [shapeCentroid.x, shapeCentroid.y];
         }
@@ -423,6 +457,7 @@ class Camera
         text(`${message}`, screenPos.x, screenPos.y);
         textAlign(LEFT);
     }
+
     displayMeasure(start, units)
     {
         let mousePos = this.screenPointToMapPoint(mouseX, mouseY);
@@ -483,10 +518,12 @@ class Camera
         let col = color(troop.stk.levels[0],troop.stk.levels[1],troop.stk.levels[2], 250);
 
         let aoe = this.mapDimensionsToScreen(action.areaEffect, action.areaEffect);
-        fill(col);
-        strokeWeight(8);
-        stroke(col);
-        ellipse(mouseX, mouseY, aoe.x, aoe.y);
+        if(createVector(mouseX, mouseY).dist(pos) <= dim.x)
+        {
+            fill(col);
+            stroke(255);
+            ellipse(mouseX, mouseY, aoe.x, aoe.y);
+        }
 
         if(otherTroops !== undefined)
         {
@@ -506,10 +543,6 @@ class Camera
             for(let i = 0; i < game.areas.length; i++)
             {
                 let area = game.areas[i];
-                if(area.animated)
-                {
-                    area.shape = this.getShape(area.position.x, area.position.y, area.radius, area.pointsAmount, area.randomize);
-                }
                 this.displayArea(area);
             }
         }
@@ -602,6 +635,7 @@ class Camera
         stroke(255,0,0,50);
         rectMode(RADIUS);
         rect(pos.x, pos.y, dim.x, dim.y);
+        strokeWeight(1)
     }
 
     /** Moves the camera around using arrow keys */
