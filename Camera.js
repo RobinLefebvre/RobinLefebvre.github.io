@@ -138,8 +138,17 @@ class Camera
         {
             if(!this.anchor.position.equals(this.mapPosition))
             {
-
-                this.mapPosition.lerp(this.anchor.position, 0.1);
+                if(this.anchor.position.dist(this.mapPosition) > 10)
+                    this.mapPosition.lerp(this.anchor.position, 0.075);
+                else
+                {
+                    this.mapPosition = this.anchor.position.copy();
+                    this.anchor = undefined;
+                }
+            }
+            else
+            {
+                this.anchor = undefined;
             }
         }
     }
