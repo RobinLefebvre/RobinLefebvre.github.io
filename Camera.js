@@ -16,7 +16,7 @@ class Camera
         else
         {
             let position = args[0] || new Vector2D(0,0);
-            let dimension = args[1] || 1000;
+            let dimension = args[1] || 10000000;
             this.setMap(position, dimension);
         }
     }
@@ -136,16 +136,29 @@ class Camera
     {
         if(this.anchor !== undefined && this.anchor.position instanceof Vector2D)
         {
-            if(! this.anchor.position.equals(this.mapPosition))
+            if(!this.anchor.position.equals(this.mapPosition))
             {
-                this.mapPosition = this.anchor.position
+
+                this.mapPosition.lerp(this.anchor.position, 0.1);
             }
         }
+    }
+
+    /**Tells whether a vector is on screen */
+    isOnScreen(v)
+    {
+        let b = this.getBoundaries();
+        if(v.x > b.left && v.x < b.right
+            && v.y > b.top && v.y < b.bottom)
+        {
+            return true;
+        }
+        return false;
     }
     /**Zooms the camera back and forth. Takes in the event from mouseWheel */
     mousewheelZoom(mouseWheelEvent)
     {
-        let zoomChange = floor(sqrt(this.zoom) * 10) * (mouseWheelEvent.delta / 100);
+        let zoomChange = floor(Math.pow(this.zoom, 1/2) * Math.pow(this.zoom, 1/4) ) * (mouseWheelEvent.delta / 100);
         this.zoom += zoomChange;
         if(isNaN(this.zoom))
         {
@@ -158,12 +171,12 @@ class Camera
     mousewheelMove(mouseDraggedEvent)
     {
         // We click the mouseWheel button. event.buttons == 2 is right-click.
-        if(event.buttons == 4)
+        if(mouseDraggedEvent.buttons == 4)
         {
-            let speed = Math.ceil(camera.clicksPerPixel * 0.5);
-            camera.mapPosition.x -= event.movementX * speed;
-            camera.mapPosition.y -= event.movementY * speed;
-            camera.anchor = undefined;
+            let speed = Math.ceil(this.clicksPerPixel * 0.5);
+            this.mapPosition.x -= mouseDraggedEvent.movementX * speed;
+            this.mapPosition.y -= mouseDraggedEvent.movementY * speed;
+            this.anchor = undefined;
             return false;
         }
     }
