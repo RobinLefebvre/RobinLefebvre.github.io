@@ -138,8 +138,8 @@ class Camera
         {
             if(!this.anchor.position.equals(this.mapPosition))
             {
-                if(this.anchor.position.dist(this.mapPosition) > this.zoom / 500)
-                    this.mapPosition.lerp(this.anchor.position, 0.075);
+                if(this.anchor.position.dist(this.mapPosition) > this.zoom / 250)
+                    this.mapPosition.lerp(this.anchor.position, 0.2);
                 else
                 {
                     this.mapPosition = this.anchor.position.copy();
@@ -166,12 +166,15 @@ class Camera
     /**Zooms the camera back and forth. Takes in the event from mouseWheel */
     mousewheelZoom(mouseWheelEvent)
     {
-        let zoomChange = floor(Math.pow(this.zoom, 1/2) * Math.pow(this.zoom, 1/3) ) * (mouseWheelEvent.delta / 100);
+        let mouseDelta = mouseWheelEvent.delta
+        if(!(mouseDelta < 1) && !(mouseDelta > -1))
+            mouseDelta /= 100
+        
+        let zoomChange = floor(Math.pow(this.zoom, 1/2) * Math.pow(this.zoom, 1/3) ) * mouseDelta;
         this.zoom += zoomChange;
         if(isNaN(this.zoom))
-        {
             this.zoom = 10;
-        }
+        
         this.setMap(this.mapPosition, this.zoom);
         return false;
     }
