@@ -139,7 +139,7 @@ class Camera
             if(!this.anchor.position.equals(this.mapPosition))
             {
                 if(this.anchor.position.dist(this.mapPosition) > this.zoom / 250)
-                    this.mapPosition.lerp(this.anchor.position, 0.2);
+                    this.mapPosition.lerp(this.anchor.position, 0.1);
                 else
                 {
                     this.mapPosition = this.anchor.position.copy();
@@ -163,26 +163,35 @@ class Camera
         }
         return false;
     }
-    /**Zooms the camera back and forth. Takes in the event from mouseWheel */
-    mousewheelZoom(mouseWheelEvent)
+    mousepressMove(mousePressedEvent, button)
     {
-        let mouseDelta = mouseWheelEvent.delta
-        if(!(mouseDelta < 1) && !(mouseDelta > -1))
-            mouseDelta /= 100
-        
-        let zoomChange = floor(Math.pow(this.zoom, 1/2) * Math.pow(this.zoom, 1/3) ) * mouseDelta;
-        this.zoom += zoomChange;
-        if(isNaN(this.zoom))
-            this.zoom = 10;
-        
-        this.setMap(this.mapPosition, this.zoom);
-        return false;
+        if(mousePressedEvent.buttons == button)
+        {
+            let m = this.screenToMap(mouseX, mouseY);
+            camera.anchor = { position: m };
+            return false;
+        }
     }
+     /**Zooms the camera back and forth. Takes in the event from mouseWheel */
+     mousewheelZoom(mouseWheelEvent)
+     {
+         let mouseDelta = mouseWheelEvent.delta
+         if(mouseDelta < 1 || mouseDelta > -1)
+             mouseDelta /= 100
+         
+         let zoomChange = floor(Math.pow(this.zoom, 1/2) * Math.pow(this.zoom, 1/3) ) * mouseDelta;
+         this.zoom += zoomChange;
+         if(isNaN(this.zoom))
+             this.zoom = 10;
+         
+         this.setMap(this.mapPosition, this.zoom);
+         return false;
+     }
     /**Drags the Camera around. Takes in the event from mouseDragged */
-    mousewheelMove(mouseDraggedEvent)
+    mousedragMove(mouseDraggedEvent, button)
     {
         // We click the mouseWheel button. event.buttons == 2 is right-click.
-        if(mouseDraggedEvent.buttons == 4)
+        if(mouseDraggedEvent.buttons == button)
         {
             let speed = Math.ceil(this.clicksPerPixel * 0.5);
             this.mapPosition.x -= mouseDraggedEvent.movementX * speed;
