@@ -38,7 +38,7 @@ class Dot
     }
     getPoints()
     { 
-        return this.position.copy(); 
+        return [this.position.copy()]; 
     }
     /** Returns wether this shape contains the given Vector2D */
     contains(vector)
@@ -47,8 +47,18 @@ class Dot
     }
     /** Returns wether this shape intersect with the given shape */
     intersects(shape)
-    { 
-        return shape.contains(this); 
+    {
+        let thisPoly = new Polygon(this.getPoints())
+        if(shape instanceof Polygon)
+        {
+            return thisPoly.intersects(shape)
+        }
+        else
+        {
+            let rangePoly = new Polygon(this.getPoints())
+            return thisPoly.intersects(rangePoly)
+        }
+        
     }
     /** Displays the shape to the given canvas, using the given camera's parameter. See p5Renderer and Camera.js */
     display(render, camera)
@@ -131,14 +141,6 @@ class Triangle extends Dot
                 vector.y <= this.position.y + (this.height));
     
     }
-    /** Returns wether this shape intersect with the given range. Inacurrate for Triangle. Resolves as Rectangle */
-    intersects(range)
-    {
-        return !(range.position.x - range.width > this.position.x + this.base ||
-                range.position.x + range.width < this.position.x - this.base ||
-                range.position.y - range.height > this.position.y + this.height ||
-                range.position.y + range.height < this.position.y - this.height);
-    }
     /** Displays the shape on the given canvas, using given camera */
     display(render, camera)
     {
@@ -146,7 +148,6 @@ class Triangle extends Dot
         if(this.intersects(cameraShape))
         {
             // Setup render to use proper coloring
-            render._pInst.strokeWeight(1);
             render._pInst.stroke(this.circumferenceColor);
             render._pInst.fill(this.areaColor);
 
@@ -202,8 +203,8 @@ class Rectangle extends Dot
     /** Returns an array with the position of the points of the current Rectangle */
     getPoints()
     {
-        let h = this.height / 2;
-        let w = this.width / 2;
+        let h = this.height;
+        let w = this.width;
 
         let center = Vector2D.rotateAround(this.pivot, this.position, this.rotation);
 
@@ -243,14 +244,6 @@ class Rectangle extends Dot
                 vector.y <= this.position.y + (this.height));
     
     }
-    /** Returns wether this shape intersect with the given shape */
-    intersects(range)
-    {
-        return !(range.position.x - range.width > this.position.x + this.width ||
-                range.position.x + range.width < this.position.x - this.width ||
-                range.position.y - range.height > this.position.y + this.height ||
-                range.position.y + range.height < this.position.y - this.height);
-    }
     /** Displays the shape on the given canvas, using given camera */
     display(render, camera)
     {
@@ -258,7 +251,6 @@ class Rectangle extends Dot
         if(this.intersects(cameraShape))
         {
             // Setup render to use proper coloring
-            render._pInst.strokeWeight(1);
             render._pInst.stroke(this.circumferenceColor);
             render._pInst.fill(this.areaColor);
 
@@ -321,34 +313,42 @@ class Circle extends Dot
         return (this.position.dist(vector) < this.radius)
     }
 
-    intersects(range)
+    intersects(shape)
     {
-        if(range instanceof Rectangle)
+        let flag = false;
+        if(shape instanceof Polygon)
         {
-            let xDist = Math.abs(range.position.x - this.position.x);
-            let yDist = Math.abs(range.position.y - this.position.y);
-            let r = this.radius;
-            let w = range.width;
-            let h = range.height;
-            let edges = Math.pow((xDist - w), 2) + Math.pow((yDist - h), 2);
-            // No intersection
-            if (xDist > (r + w) || yDist > (r + h))
-                return false;
-            // iIntersection within the circle
-            if (xDist <= w || yDist <= h)
-                return true;
-            // Intersection on the edge of the circle
-            return edges <= this.rSquared;
+            if(shape.contains(this.position))
+            {
+                 flag = true; 
+            }
+
+            shape.points.forEach(p => {
+                if(this.contains(p)){flag = true;}
+            })
         }
-        if(range instanceof Circle)
+        else if(shape.getPoints)
         {
-            return this.position.dist(range.position) < this.radius + range.radius
+            let oP = new Polygon(shape.getPoints())
+            if(oP.contains(this.position))
+            {
+                flag = true;
+            }
+            oP.points.forEach(p => 
+            {
+                if(this.contains(p))
+                {
+                    flag = true;
+                }
+            })
         }
-        
-        if(range instanceof Dot )
+        else
         {
-            return this.position.equals(range.position)
+            //ERROR
+            flag = undefined;
         }
+        return flag;
+
     }
 
     display(render, camera)
@@ -356,7 +356,6 @@ class Circle extends Dot
         let cameraShape = camera.getShape();
         if (this.intersects(cameraShape))
         {
-            render._pInst.strokeWeight(1);
             render._pInst.stroke(this.circumferenceColor);
             render._pInst.fill(this.areaColor);
 
@@ -386,15 +385,43 @@ class Polygon
     {
         if(args[0] instanceof Array)
             this.points = args[0];
+        
     }
-    
+    getPoints()
+    {
+        return this.points;
+    }
     isClosed()
     {
         let a = this.points[0];
         let b = this.points[this.points.length-1]
         return (a.equals(b))
     }
-
+    intersects(shape)
+    {
+        if(shape instanceof Polygon)
+        {
+            let flag = false;
+            shape.points.forEach(oP => {
+                if(this.contains(oP))
+                {
+                    flag = true;
+                }
+            })
+            this.points.forEach(tP => {
+                if(shape.contains(tP))
+                {
+                    flag = true;
+                }
+            })
+            return flag;
+        }
+        else if(shape instanceof Dot)
+        {
+            return this.contains(shape.position);
+        }
+        
+    }
     contains(vector)
     {
         let magicFunction = (P0, P1, P2) => { return ((P1[0] - P0[0]) * (P2[1] - P0[1]) - (P2[0] - P0[0]) * (P1[1] - P0[1])); }
@@ -431,7 +458,6 @@ class Polygon
         }
         return wn != 0;
     }
-
     display(render, camera)
     {
         let flag = false;
@@ -439,12 +465,16 @@ class Polygon
 
         if(flag)
         {
+            if(this.areaColor)
+                render._pInst.fill(this.areaColor);
+            if(this.circumferenceColor)
+                render._pInst.stroke(this.circumferenceColor);
+
             render._pInst.beginShape();
             this.points.forEach(p => { let sPoint = camera.mapToScreen(p); vertex(sPoint.x, sPoint.y) } );
             render._pInst.endShape(CLOSE);
         }
     }
-
     /** Centroid is taking in an set of points and returning the x-y coordinates of the centroid.*/
     centroid()
     {
@@ -493,19 +523,20 @@ class Polygon
         return this.centre;
     } 
 
-    static getRegular(points, radius, center)
+    static getRegular(points, radius, center, startRot)
     {
-        let ret = [];
+        if(!startRot)
+            startRot = 0;
         if(!center)
-        {
             center = new Vector2D(0,0)
-        }
-        for(let i =0; i < TWO_PI; i += TWO_PI / points)
+
+        let ret = [];
+        for(let i = startRot; i < Math.PI * 2 + startRot; i += (Math.PI * 2) / points)
         {
-            let x = radius * cos(i) + center.x;
-            let y = radius * sin(i) + center.y;
-            ret.push(new Vector2D(x, y));
+            let x = (radius) * cos(i) + center.x;
+            let y = (radius) * sin(i) + center.y;
+            ret.push(new Vector2D(x, y).floor());
         }
-        return new Polygon(ret);
+        return (new Polygon(ret));
     }
 }
